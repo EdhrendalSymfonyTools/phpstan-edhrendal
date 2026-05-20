@@ -173,3 +173,75 @@ class UserGetController
     public function __invoke(int $id): Response { … }
 }
 ```
+
+---
+
+### `NamedArgumentsRule` — PHP
+
+Enforces named argument conventions on all function, method, static-method, and constructor calls.
+
+**Always reported:**
+
+| Violation    | Description                                                            |
+|--------------|------------------------------------------------------------------------|
+| Wrong order  | Named arguments are not in the same order as declared in the signature |
+| Missing name | An argument is passed positionally when named syntax is required       |
+
+The order error includes both the expected and actual orderings:
+
+```
+Named arguments are not in the same order as declared in the function signature
+(expected: $search, $replace, $subject; got: $subject, $search, $replace).
+```
+
+The missing-name error is reported at the argument's line and names the corresponding parameter:
+
+```
+Argument $subject must be passed as a named argument.
+```
+
+Calls to functions or methods that do not support named arguments (some C-extension functions) are silently skipped.
+
+**Include:**
+
+```neon
+# phpstan.neon
+includes:
+    - vendor/edhrendal-sf-tools/phpstan-edhrendal/rules/php/named-arguments.neon
+```
+
+**Parameters (optional):**
+
+```neon
+# phpstan.neon
+includes:
+    - vendor/edhrendal-sf-tools/phpstan-edhrendal/rules/php/named-arguments.neon
+
+parameters:
+    edhrendal:
+        php:
+            namedArguments:
+                forceNamed: true          # default: true
+                forceSingleRequired: false # default: false
+```
+
+| Parameter             | Default | Description                                                                                                                                           |
+|-----------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `forceNamed`          | `true`  | Require named arguments on all calls. When `false`, only the order check is active.                                                                   |
+| `forceSingleRequired` | `false` | When `true`, removes the exemption for callables that have only one required parameter (e.g. `setTitle('foo')` must become `setTitle(title: 'foo')`). |
+
+**Example — before / after:**
+
+```php
+// ❌ reported — wrong order
+str_replace(subject: $html, search: '<br>', replace: "\n");
+
+// ❌ reported — positional arguments (forceNamed: true)
+str_replace('<br>', "\n", $html);
+
+// ✅ ok
+str_replace(search: '<br>', replace: "\n", subject: $html);
+
+// ✅ ok — single required parameter, exempt by default
+strtolower($string);
+```

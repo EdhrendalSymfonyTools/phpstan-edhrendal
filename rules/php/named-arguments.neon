@@ -1,0 +1,25 @@
+services:
+    -
+        class: EdhrendalSfTools\PHPStan\Rules\Php\NamedArgumentsRule
+        arguments:
+            forceNamed: %edhrendal.php.namedArguments.forceNamed%
+            forceSingleRequired: %edhrendal.php.namedArguments.forceSingleRequired%
+        tags:
+            - phpstan.rules.rule
+
+parametersSchema:
+    edhrendal: structure([
+        php: structure([
+            namedArguments: structure([
+                forceNamed: bool()
+                forceSingleRequired: bool()
+            ])
+        ])
+    ])
+
+parameters:
+    edhrendal:
+        php:
+            namedArguments:
+                forceNamed: true
+                forceSingleRequired: false
